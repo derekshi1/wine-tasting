@@ -47,7 +47,6 @@ env/
 *.ipynb
 
 # Data files (raw datasets)
-data/
 *.csv
 *.xlsx
 *.xls
