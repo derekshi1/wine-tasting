@@ -31,41 +31,41 @@ def explore_data(df: pd.DataFrame) -> None:
     Args:
         df: DataFrame to explore
     """
-    print("🍷 Wine Quality Dataset Overview")
+    print(" Wine Quality Dataset Overview")
     print("=" * 50)
     
     # Basic info
-    print(f"\n📊 Dataset Shape: {df.shape[0]} rows × {df.shape[1]} columns")
+    print(f"\n Dataset Shape: {df.shape[0]} rows × {df.shape[1]} columns")
     
     # Columns and types
-    print("\n📋 Columns and Data Types:")
+    print("\n Columns and Data Types:")
     print(df.dtypes)
     
     # Missing values
     print("\n🔍 Missing Values:")
     missing = df.isnull().sum()
     if missing.sum() == 0:
-        print("   ✅ No missing values")
+        print("   No missing values")
     else:
         print(missing[missing > 0])
     
     # Basic statistics
-    print("\n📈 Statistical Summary:")
+    print("\nStatistical Summary:")
     print(df.describe())
     
     # First few rows
-    print("\n👁️ First 5 Rows:")
+    print("\nFirst 5 Rows:")
     print(df.head())
     
     # Data info
-    print("\n💾 Memory Usage:")
+    print("\nMemory Usage:")
     print(f"   {df.memory_usage(deep=True).sum() / 1024:.2f} KB")
 
 
 def get_quality_distribution(df: pd.DataFrame) -> None:
     """Print distribution of wine quality ratings."""
     if "quality" in df.columns:
-        print("\n⭐ Quality Distribution:")
+        print("\n Quality Distribution:")
         print(df["quality"].value_counts().sort_index())
     else:
         print("\n⚠️ 'quality' column not found in dataset")
@@ -86,7 +86,7 @@ def get_feature_correlations(df: pd.DataFrame, top_n: int = 10) -> None:
     numeric_df = df.select_dtypes(include=["number"])
     correlations = numeric_df.corr()["quality"].sort_values(ascending=False)
     
-    print(f"\n🔗 Top {top_n} Features Correlated with Quality:")
+    print(f"\nTop {top_n} Features Correlated with Quality:")
     for feature, corr in correlations.head(top_n + 1).items():
         if feature != "quality":
             print(f"   {feature:20} {corr:+.4f}")
@@ -103,7 +103,7 @@ def main():
         get_quality_distribution(df)
         get_feature_correlations(df)
         
-        print("\n✅ Data loading complete!")
+        print("\n Data loading complete!")
         
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")
