@@ -37,7 +37,10 @@ def print_metrics(name: str, metrics: dict, result: dict) -> None:
     print(f"\n{'=' * 50}")
     print(f"  {name}")
     print(f"{'=' * 50}")
-    print(f"  Best K           : {result['best_k']}")
+    if "best_k" in result:
+        print(f"  Best K           : {result['best_k']}")
+    if "best_params" in result:
+        print(f"  Best params      : {result['best_params']}")
     if "best_n_components" in result:
         print(f"  PCA components   : {result['best_n_components']}")
     if "selection_method" in result:
@@ -72,23 +75,25 @@ def plot_cv_k(results: dict, save_path: str = "cv_k_curves.png") -> None:
     plt.close()
     print(f"\nSaved CV-K curves → {save_path}")
 
-def plot_confusion_matrices(results, y_tests, y_preds, save_path="confusion_matrices.png"):
-    all_labels = list(range(11))  # force 0–10
+def plot_confusion_matrices(results: dict, y_tests: dict, y_preds: dict,
+                             save_path: str = "confusion_matrices.png") -> None:
+    """Plot a confusion matrix for each model variant."""
     n = len(results)
     fig, axes = plt.subplots(1, n, figsize=(5 * n, 4))
     if n == 1:
         axes = [axes]
-
+ 
     for ax, name in zip(axes, results.keys()):
-        cm = confusion_matrix(y_tests[name], y_preds[name], labels=all_labels)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=all_labels)
+        cm = confusion_matrix(y_tests[name], y_preds[name])
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
         disp.plot(ax=ax, colorbar=False)
         ax.set_title(name)
-
+ 
     fig.suptitle("Confusion Matrices", fontsize=13)
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
     plt.close()
+    print(f"Saved confusion matrices → {save_path}")
 
 def plot_pca_components(component_scores: np.ndarray, best_n: int,
                          save_path: str = "pca_components.png") -> None:

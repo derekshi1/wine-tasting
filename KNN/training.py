@@ -9,7 +9,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.decomposition import PCA
 
 from model import make_knn_pipeline, K_GRID
-from features import forward_stepwise, backward_stepwise
+from features import forward_stepwise, backward_stepwise, tree_based_selection
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
@@ -168,6 +168,73 @@ def train_distance_weighted(X_train, y_train, cv: int = 5) -> dict:
     best_k = K_GRID[np.argmax(cv_scores)]
     model = make_knn_pipeline(best_k, weights="distance")
     model.fit(X_train, y_train)
+    return {
+        "model": model,
+        "best_k": best_k,
+        "cv_scores": cv_scores,
+        "features": list(range(X_train.shape[1])),
+        "feature_mask": None,
+    }
+
+def train_tree_selection(X_train, y_train, cv: int = 5) -> dict:
+    """
+    Tree-based feature selection: rank features by Random Forest importance,
+    search over top-n subsets using CV accuracy, then tune K on best subset.
+    """
+    k_for_selection = 10
+ 
+    print("  Fitting Random Forest and ranking features…")
+    best_features, importances, subset_scores = tree_based_selection(
+        X_train, y_train, k=k_for_selection, cv=cv
+    )
+    print(f"  Best subset size: {len(best_features)}  |  features: {best_features}")
+ 
+    best_k, cv_scores = tune_k(X_train[:, best_features], y_train, cv)
+    model = make_knn_pipeline(best_k)
+    model.fit(X_train[:, best_features], y_train)
+ 
+    return {
+        "model": model,
+        "best_k": best_k,
+        "cv_scores": cv_scores,
+        "features": best_features,
+        "feature_mask": best_features,
+        "importances": importances,
+        "subset_scores": subset_scores,
+    }
+ 
+ 
+def train_smote_distance(X_train, y_train, cv: int = 5) -> dict:
+    """
+    SMOTE + distance-weighted KNN.
+ 
+    SMOTE is applied to the full training set before CV tuning. Note that
+    in a strict CV setup SMOTE would be applied inside each fold.
+    """
+    from imblearn.over_sampling import SMOTE
+ 
+    print("  Applying SMOTE to training data…")
+    min_class_count = int(np.bincount(y_train)[np.unique(y_train)].min())
+    k_neighbors = min(5, min_class_count - 1)
+    sm = SMOTE(random_state=0, k_neighbors=k_neighbors)
+    X_resampled, y_resampled = sm.fit_resample(X_train, y_train)
+    print(f"  Training size before SMOTE: {len(y_train)}  after: {len(y_resampled)}")
+
+    min_class_count = int(np.bincount(y_resampled)[np.unique(y_resampled)].min())
+    max_safe_k = max(1, int(min_class_count * (1 - 1 / cv)) - 1)
+    safe_k_grid = [k for k in K_GRID if k <= max_safe_k]
+ 
+    cv_scores = np.array([
+        cross_val_score(
+            make_knn_pipeline(k, weights="distance"),
+            X_resampled, y_resampled, cv=cv, scoring="accuracy"
+        ).mean()
+        for k in safe_k_grid
+    ])
+    best_k = safe_k_grid[np.argmax(cv_scores)]
+    model = make_knn_pipeline(best_k, weights="distance")
+    model.fit(X_resampled, y_resampled)
+ 
     return {
         "model": model,
         "best_k": best_k,
