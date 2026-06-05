@@ -82,7 +82,7 @@ class MixupAugmentation:
         )
         y_synthetic = pd.Series(y_synthetic_list, name=y.name)
         
-        print(f"✅ Generated {n_synthetic} synthetic samples")
+        print(f" Generated {n_synthetic} synthetic samples")
         
         return X_synthetic, y_synthetic
     

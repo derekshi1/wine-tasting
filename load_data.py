@@ -7,7 +7,7 @@ import pandas as pd
 from pathlib import Path
 
 
-def load_wine_data(filepath: str = "WineQT.csv") -> pd.DataFrame:
+def load_wine_data(filepath: str = "/Users/derek/UCLA_stats/wine-tasting/WineQT.csv") -> pd.DataFrame:
     """
     Load the wine quality dataset from CSV file.
     

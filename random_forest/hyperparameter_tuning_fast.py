@@ -196,7 +196,7 @@ def main():
     print("   ✅ Complete")
     
     # Augment training data with Mixup
-    print("\n🔄 Augmenting training data with Mixup (1x)...")
+    print("\n Augmenting training data with Mixup (1x)...")
     augmentor = MixupAugmentation(random_state=42)
     X_train_aug, y_train_aug = augmentor.augment_dataset(X_train, y_train, augmentation_factor=1.0)
     

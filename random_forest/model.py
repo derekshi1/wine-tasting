@@ -39,7 +39,7 @@ class WineQualityRF:
         print("🚂 Training Random Forest model...")
         self.model.fit(X_train, y_train)
         self.is_trained = True
-        print("✅ Training complete!")
+        print("Training complete!")
     
     def predict(self, X):
         """
